@@ -37,7 +37,6 @@ where
             if f.extension().map_or(false, |f| f == "h")
                 || f.extension().map_or(false, |f| f == "hpp")
             {
-                println!("file {f:?}");
                 files.insert(f);
             }
         })
@@ -99,7 +98,6 @@ fn find_abspath(file: &Path, include: &Path, include_dirs: &HashSet<PathBuf>) ->
 
     // Allow relative includes
     let abspath = relative_abspath(filedir, include);
-    println!("{file:?} {include:?} {abspath:?}");
     let include = abspath.as_ref().map_or(include, |p| p);
 
     for directory in include_dirs {

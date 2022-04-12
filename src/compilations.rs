@@ -31,7 +31,6 @@ where
     let mut includes = HashSet::new();
 
     for Command { file, command } in commands {
-        println!("file {file:?}");
         if matcher(&file) {
             sources.push(file);
             for include in command_parse_includes(&command) {

@@ -28,10 +28,11 @@ async fn main() {
             .await
             .unwrap();
 
-    println!("found {} sources", sources.len());
-    for d in &includes_dirs {
-        println!("\t{d:?}");
-    }
+    println!(
+        "found {} sources, {} includes",
+        sources.len(),
+        includes_dirs.len()
+    );
 
     println!("\ngenerate graph");
     let graph = graph::generate(&sources, includes_dirs, match_file)
