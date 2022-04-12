@@ -26,21 +26,22 @@ where
     let matcher = Arc::new(matcher);
 
     for source in sources {
-        let path = source.canonicalize()?;
-        if matcher(&path) {
-            files.insert(path);
+        if let Ok(path) = source.canonicalize() {
+            if matcher(&path) {
+                files.insert(path);
+            }
         }
     }
 
     for include_dir in include_dirs.iter() {
-        walk_recursive(include_dir, &mut |f| {
+        let _ = walk_recursive(include_dir, &mut |f| {
             if f.extension().map_or(false, |f| f == "h")
                 || f.extension().map_or(false, |f| f == "hpp")
             {
                 files.insert(f);
             }
         })
-        .await?;
+        .await;
     }
 
     let handles = files
