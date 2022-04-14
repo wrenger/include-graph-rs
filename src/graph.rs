@@ -50,6 +50,7 @@ where
 
     let mut graph = HashMap::<PathBuf, HashSet<PathBuf>>::new();
 
+    // This would be much easier if the iterator could return chunks...
     let mut files = files.into_iter().peekable();
     while files.peek().is_some() {
         let mut handles = Vec::with_capacity(MAX_FILES);
