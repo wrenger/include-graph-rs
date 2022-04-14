@@ -9,6 +9,8 @@ use regex::Regex;
 use tokio::fs::{self, File};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
+const MAX_FILES: usize = 1000;
+
 static INCLUDE_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"[ \t]*#[ \t]*include[ \t]+"([\w./]+\.(h|hpp))""#).unwrap());
 
@@ -44,22 +46,31 @@ where
         .await;
     }
 
-    let handles = files
-        .into_iter()
-        .map(|f| {
-            let include_dirs = include_dirs.clone();
-            let matcher = matcher.clone();
-            tokio::spawn(async move { parse_file(f, &include_dirs, matcher.as_ref()).await })
-        })
-        .collect::<Vec<_>>();
+    println!("parsing {} files", files.len());
 
     let mut graph = HashMap::<PathBuf, HashSet<PathBuf>>::new();
-    for h in handles {
-        match h.await? {
-            Ok((k, v)) => {
-                graph.insert(k, v);
+
+    let mut files = files.into_iter().peekable();
+    while files.peek().is_some() {
+        let mut handles = Vec::with_capacity(MAX_FILES);
+        for _ in 0..MAX_FILES {
+            if let Some(f) = files.next() {
+                let include_dirs = include_dirs.clone();
+                let matcher = matcher.clone();
+                handles.push(tokio::spawn(async move {
+                    parse_file(f, &include_dirs, matcher.as_ref()).await
+                }));
+            } else {
+                break;
             }
-            Err(e) => eprintln!("Error file parse {e:?}"),
+        }
+        for h in handles {
+            match h.await? {
+                Ok((k, v)) => {
+                    graph.insert(k, v);
+                }
+                Err(e) => eprintln!("Error file parse {e:?}"),
+            }
         }
     }
 

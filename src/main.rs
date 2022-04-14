@@ -29,7 +29,7 @@ async fn main() {
             .unwrap();
 
     println!(
-        "found {} sources, {} includes",
+        "found {} sources, {} include dirs",
         sources.len(),
         includes_dirs.len()
     );
@@ -38,7 +38,7 @@ async fn main() {
     let graph = graph::generate(&sources, includes_dirs, match_file)
         .await
         .unwrap();
-    println!("{} nodes", graph.len());
+    println!("finish graph: {} nodes", graph.len());
 
     let outfile = compilations.parent().unwrap().join("dependencies.json");
 
