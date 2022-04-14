@@ -23,10 +23,9 @@ async fn main() {
     let project = project.canonicalize().unwrap();
 
     println!("parse compile commands: {compilations:?}");
-    let (sources, includes_dirs) =
-        compilations::collect(&compilations, |f| f.starts_with(&project))
-            .await
-            .unwrap();
+    let (sources, includes_dirs) = compilations::parse(&compilations, |f| f.starts_with(&project))
+        .await
+        .unwrap();
 
     println!(
         "found {} sources, {} include dirs",

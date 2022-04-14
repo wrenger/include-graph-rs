@@ -14,6 +14,7 @@ const MAX_FILES: usize = 1000;
 static INCLUDE_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"[ \t]*#[ \t]*include[ \t]+"([\w./]+\.(h|hpp))""#).unwrap());
 
+/// Generate the include graph by parsing all source and header files.
 pub async fn generate<M>(
     sources: &[PathBuf],
     include_dirs: HashSet<PathBuf>,

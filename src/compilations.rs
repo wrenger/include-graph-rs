@@ -17,7 +17,8 @@ struct Command {
     command: String,
 }
 
-pub async fn collect<M>(
+/// Parse the compile commands to retrieve all source files and include directories.
+pub async fn parse<M>(
     compilations: &Path,
     matcher: M,
 ) -> io::Result<(Vec<PathBuf>, HashSet<PathBuf>)>
