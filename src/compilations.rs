@@ -8,7 +8,7 @@ use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json::{self, Deserializer};
 
-static CMD_INCLUD_RE: Lazy<Regex> =
+static CMD_INCLUDE_RE: Lazy<Regex> =
     Lazy::new(|| Regex::new("(^| )-I ?([\\w\\-/\\.]+)( |$)").unwrap());
 
 #[derive(Deserialize)]
@@ -34,8 +34,10 @@ where
         let Command { file, command } = elem.unwrap();
         if matcher(&file) {
             sources.push(file);
-            for include in command_parse_includes(&command) {
-                includes.insert(include);
+            for include in includes_from_args(compilations.parent().unwrap(), &command) {
+                if matcher(&include) {
+                    includes.insert(include);
+                }
             }
         }
     }
@@ -43,10 +45,13 @@ where
     Ok((sources, includes))
 }
 
-fn command_parse_includes(command: &str) -> impl Iterator<Item = PathBuf> + '_ {
-    CMD_INCLUD_RE
+fn includes_from_args<'a>(
+    base_dir: &'a Path,
+    command: &'a str,
+) -> impl Iterator<Item = PathBuf> + 'a {
+    CMD_INCLUDE_RE
         .captures_iter(command)
-        .map(|m| PathBuf::from(&m[2]))
+        .map(move |m| [base_dir, Path::new(&m[2])].iter().collect())
 }
 
 pub fn iter_json_array<T: DeserializeOwned, R: Read>(

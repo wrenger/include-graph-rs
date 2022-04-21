@@ -47,5 +47,9 @@ async fn main() {
 }
 
 fn match_file(path: &Path) -> bool {
-    path.is_absolute() && path.file_name().map_or(false, |n| n.is_ascii())
+    path.is_absolute()
+        && path.file_name().map_or(false, |n| {
+            n.to_str()
+                .map_or(false, |s| s.starts_with(|c: char| c.is_ascii_alphabetic()))
+        })
 }
