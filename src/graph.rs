@@ -115,6 +115,11 @@ fn find_abspath(file: &Path, include: &Path, include_dirs: &HashSet<PathBuf>) ->
     let include = abspath.as_ref().map_or(include, |p| p);
 
     for directory in include_dirs {
+        // For private includes only consider the current module
+        if directory.ends_with("src") && !include.starts_with(directory) {
+            continue;
+        }
+
         let path = directory.join(include);
         if path.exists() {
             return path.canonicalize().ok();
