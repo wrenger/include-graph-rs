@@ -1,15 +1,15 @@
 use std::collections::HashSet;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 
-use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json::{self, Deserializer};
 
-static CMD_INCLUDE_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new("(^| )-I ?([\\w\\-/\\.]+)( |$)").unwrap());
+static CMD_INCLUDE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("(^| )-I ?([\\w\\-/\\.]+)( |$)").unwrap());
 
 #[derive(Deserialize)]
 struct Command {
@@ -35,6 +35,10 @@ where
         if matcher(&file) {
             sources.push(file);
             for include in includes_from_args(compilations.parent().unwrap(), &command) {
+                let Ok(include) = include.canonicalize() else {
+                    println!("skip {include:?}");
+                    continue;
+                };
                 if matcher(&include) {
                     includes.insert(include);
                 }

@@ -1,18 +1,18 @@
 use std::collections::{HashMap, HashSet};
 use std::io;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use async_recursion::async_recursion;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use tokio::fs::{self, File};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 const MAX_FILES: usize = 1000;
 
-static INCLUDE_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"[ \t]*#[ \t]*include[ \t]+"([\w./]+\.(h|hpp))""#).unwrap());
+static INCLUDE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"[ \t]*#[ \t]*include[ \t]+["<]([\w./]+\.(h|hpp))[">]"#).unwrap()
+});
 
 /// Generate the include graph by parsing all source and header files.
 pub async fn generate<M>(
